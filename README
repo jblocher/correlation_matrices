@@ -1,0 +1,3 @@
+This is my project investigating correlation matrices. 
+Right now, I've only computed them (or am in the process).
+next, I hope to partition them, through time even, for community detection as well as compare them with holdings matrices.
