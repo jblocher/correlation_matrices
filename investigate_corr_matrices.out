@@ -1,0 +1,17 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+Reading Correlation Matrix
+Now compute square of correlation matrix
+Reorder Matrix Squared...10000
+Reorder Matrix Squared...20000
+Reorder Matrix ^4...5000
+Reorder Matrix ^4...10000
+Reorder Matrix ^4...20000
