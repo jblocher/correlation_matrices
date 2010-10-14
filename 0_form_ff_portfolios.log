@@ -1,0 +1,101 @@
+1                                                          The SAS System                              17:12 Friday, October 8, 2010
+
+NOTE: Unable to open SASUSER.REGSTRY. WORK.REGSTRY will be opened instead.
+NOTE: All registry changes will be lost at the end of the session.
+
+WARNING: Unable to copy SASUSER registry to WORK registry. Because of this, you will not see registry customizations during this 
+         session.
+NOTE: Copyright (c) 2002-2008 by SAS Institute Inc., Cary, NC, USA. 
+NOTE: SAS (r) Proprietary Software 9.2 (TS1M0) 
+      Licensed to UNIVERSITY OF NORTH CAROLINA CHAPEL HILL - T&R, Site 0070084073.
+NOTE: This session is executing on the Linux 2.6.18-194.el5 platform.
+
+
+
+You are running SAS 9. Some SAS 8 files will be automatically converted 
+by the V9 engine; others are incompatible.  Please see 
+http://support.sas.com/rnd/migration/planning/platform/64bit.html
+
+PROC MIGRATE will preserve current SAS file attributes and is 
+recommended for converting all your SAS libraries from any 
+SAS 8 release to SAS 9.  For details and examples, please see
+http://support.sas.com/rnd/migration/index.html
+
+
+This message is contained in the SAS news file, and is presented upon
+initialization.  Edit the file "news" in the "misc/base" directory to
+display site-specific news and information in the program log.
+The command line option "-nonews" will prevent this display.
+
+
+
+
+NOTE: SAS initialization used:
+      real time           1.49 seconds
+      cpu time            0.02 seconds
+      
+1          /* *************************************************************************/
+2          /* CREATED BY:      Jesse Blocher (UNC-Chapel Hill)
+3          /* MODIFIED BY:
+4          /* DATE CREATED:    Sept 2010
+5          /* PROG NAME:       form_ff_portfolios.sas
+6          /* Project:         Correlations > Market Fundamentals
+7          /* This File:       Pulls together FF Factors
+8          /************************************************************************************/
+9          
+10         %include 'corr_header.sas'; *header file with basic options and libraries;
+NOTE: Libref CORR was successfully assigned as follows: 
+      Engine:        V9 
+      Physical Name: /largefs/jabloche/corr
+NOTE: Libref CORRWORK was successfully assigned as follows: 
+      Engine:        V9 
+      Physical Name: /largefs/jabloche/corrwork
+19         
+20         
+21         /* Datasets required to run:
+22          * corr.FF_Research_Data_Factors		: YYYYMM  Mkt-RF     SMB     HML      RF
+23          * corr.FF_Momentum_Factor				: YYYYMM  Mom
+24          */
+25         
+26         /* Datasets Produced:
+27          *
+28          */
+29         
+30         
+31         proc contents data = corr.stocks_with_dgtw_assignments; run;
+NOTE: Data file CORR.STOCKS_WITH_DGTW_ASSIGNMENTS.DATA is in a format that is native to another 
+      host, or the file encoding does not match the session encoding. Cross Environment Data Access 
+      will be used, which might require additional CPU resources and might reduce performance.
+
+NOTE: PROCEDURE CONTENTS used (Total process time):
+      real time           0.40 seconds
+      cpu time            0.05 seconds
+      
+NOTE: The PROCEDURE CONTENTS printed page 1.
+
+32         proc contents data = corr.bench; run;
+NOTE: Data file CORR.BENCH.DATA is in a format that is native to another host, or the file encoding 
+      does not match the session encoding. Cross Environment Data Access will be used, which might 
+      require additional CPU resources and might reduce performance.
+
+NOTE: PROCEDURE CONTENTS used (Total process time):
+      real time           0.61 seconds
+      cpu time            0.02 seconds
+      
+NOTE: The PROCEDURE CONTENTS printed page 2.
+
+33         /*
+34         proc sql;
+35         	create table corr.ff_four_factors as
+36         	select a.col1 as yrmo, a.col2 as MktMinusRf, a.col3 as SMB, a.col4 as HML, a.col5 as Rf,
+36       !  b.col2 as Mom,
+37         			substr(a.col1,1,4) as year, substr(a.col1,5,2) as month
+38         	from corr.FF_Research_Data_Factors as a, corr.FF_Momentum_Factor as b
+39         	where a.col1 = b.col1;
+40         quit;
+
+NOTE: SAS Institute Inc., SAS Campus Drive, Cary, NC USA 27513-2414
+NOTE: The SAS System used:
+      real time           3.66 seconds
+      cpu time            0.10 seconds
+      

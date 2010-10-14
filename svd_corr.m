@@ -10,7 +10,12 @@ display('Begin SVD');
 tic; %start script timer.
 env; %create environment vars: home, libpath, outpath
 
-num_qtr = 116;
+num_qtr = 120;
+
+% load matrix with check dimensions
+load(fullfile(libpath,'cusip_stats.mat'));
+corrmat_stats = data;
+clear data;
 
 num_eig = 10;
 eig_time = zeros(num_eig,num_qtr);
@@ -19,36 +24,41 @@ eig_time = zeros(num_eig,num_qtr);
 for index = 1:num_qtr;
 
 disp(['Reading file for index: ',num2str(index)]);
-filename = 'ret_name.mat';
-varnamelist = load(fullfile(home,filename));
-matname = strcat(varnamelist.ret_name,'.mat');
-%%
-var = load(fullfile(libpath,strtrim(matname(index,:))));
-clear varnamelist filename;
-%drop first column which is just dates (in SAS numeric form)
-twomode_retmat = var.data(:,2:end)';
-clear var;
+filename = ['yrqtr_new',num2str(corrmat_stats(index,1)),'0',num2str(corrmat_stats(index,2)),'.mat'];
+load(fullfile(libpath,filename));
+A = data;
+clear data;
 
+%check for nonexistent data (quarters have varying numbers of trading days)
+last_day = find(sum(isnan(A),1) == size(A,1),1) - 1;
+if last_day < size(A,2) %this works because if the right size, last_day is empty and skips this.
+    A = A(:,1:last_day);
+end;
+
+if max(abs(size(A)-corrmat_stats(index,3:4))) ~= 0
+    disp(['Matrix Sizes do not match for index: ', num2str(index)]);
+    disp(size(A));
+    disp(corrmat_stats(index,3:4));
+    warning(['Index: ', num2str(index)]);
+end
 % need to figure out what to do about missing values.
 
 %% set NaN (missing) to 0. Not sure what I think about this.
-checkvec = nansum(twomode_retmat,2);
-keep_securities = find(checkvec ~= 0); %need to save this vector, it is the list of securities we're keeping
-clear checkvec;
-active_retmat = twomode_retmat(keep_securities,:);
 
-active_retmat(isnan(active_retmat)) = 0;
-%clear twomode_retmat;
+A(isnan(A)) = 0;
 
-[S V] = quickCorr(active_retmat');
+%corr is on columns of A, so need transpose of what we have to get cusip by
+%cusip cov matrix
+% corr(A) = V*S*S'*V';
+[S V] = quickCorr(A');
 D = diag(S)/sum(diag(S)); %normalized eigenvalues
 eig_time(:,index) = D(1:num_eig);
 
 filename = ['ret_eigs',num2str(index),'.mat'];
-save(fullfile(outpath,filename), 'S','V', 'keep_securities');
+save(fullfile(outpath,filename), 'S','V');
 end;
 
-clear index S V D active_retmat;
+clear index S V D;
 save(fullfile(home,'eig_time.mat'),'eig_time');
 
 t1 = toc;

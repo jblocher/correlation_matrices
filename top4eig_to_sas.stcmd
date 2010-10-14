@@ -1,0 +1,14 @@
+// Author: Jesse Blocher
+// Date: Oct 2010
+// Project: Correlations > Fundamentals
+// This file: top4eig_to_sas.stcmd
+// Desc: Converts in bulks all of the quarterly leading eigenvectors to SAS
+// Uses wildcards to convert all of them
+//
+// to run this program, run this:
+// bsub -q week -R Stattransfer -oo top4eig_to_sas.out st top4eig_to_sas.stcmd
+
+
+
+copy /largefs/jabloche/corr_out/foureig_sas*.mat sas9 /largefs/jabloche/corr/*.sas7bdat
+quit

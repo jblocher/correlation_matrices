@@ -1,0 +1,118 @@
+                                           The SAS System          17:12 Friday, October 8, 2010   1
+
+                                       The CONTENTS Procedure
+
+Data Set Name        CORR.STOCKS_WITH_DGTW_ASSIGNMENTS                  Observations          151908
+Member Type          DATA                                               Variables             15    
+Engine               V9                                                 Indexes               0     
+Created              Friday, October 08, 2010 09:10:55 PM               Observation Length    105   
+Last Modified        Friday, October 08, 2010 09:10:55 PM               Deleted Observations  0     
+Protection                                                              Compressed            NO    
+Data Set Type                                                           Sorted                NO    
+Label                stocks_with_dgtw_assignments dataset written                                   
+                     by Stat/Transfer Ver. 10.1.1551.1015                                           
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+Data Representation  LINUX_32, INTEL_ABI                                                            
+Encoding             latin1  Western (ISO)                                                          
+
+
+                                 Engine/Host Dependent Information
+
+      Data Set Page Size          4096                                                        
+      Number of Data Set Pages    3999                                                        
+      First Data Page             1                                                           
+      Max Obs per Page            38                                                          
+      Obs in First Data Page      14                                                          
+      Number of Data Set Repairs  0                                                           
+      Filename                    /largefs/jabloche/corr/stocks_with_dgtw_assignments.sas7bdat
+      Release Created             9.0000M0                                                    
+      Host Created                WIN                                                         
+      Inode Number                10842851                                                    
+      Access Permission           rw-r-----                                                   
+      Owner Name                  jabloche                                                    
+      File Size (bytes)           16380928                                                    
+
+
+                            Alphabetic List of Variables and Attributes
+ 
+                                   #    Variable      Type    Len
+
+                                   2    Abbrevname    Char     28
+                                  15    Adj_Bm_Jun    Num       8
+                                   5    Book_M_Jun    Num       3
+                                  11    Bookmarket    Num       8
+                                  10    Bookvalue     Num       8
+                                   7    Exch_Jun      Num       3
+                                   9    Ffind_Jun     Num       3
+                                  13    Ind_Bm_Jun    Num       8
+                                   8    Ind_Jun       Num       4
+                                  14    Ins_Bm_Jun    Num       8
+                                  12    Logbm         Num       8
+                                   6    Mom_Jun       Num       3
+                                   1    Permno        Num       6
+                                   4    Size_Jun      Num       3
+                                   3    Year          Num       4
+                                           The SAS System          17:12 Friday, October 8, 2010   2
+
+                                       The CONTENTS Procedure
+
+Data Set Name        CORR.BENCH                                           Observations          4375
+Member Type          DATA                                                 Variables             16  
+Engine               V9                                                   Indexes               0   
+Created              Friday, October 08, 2010 09:11:55 PM                 Observation Length    109 
+Last Modified        Friday, October 08, 2010 09:11:55 PM                 Deleted Observations  0   
+Protection                                                                Compressed            NO  
+Data Set Type                                                             Sorted                NO  
+Label                bench dataset written by Stat/Transfer                                         
+                     Ver. 10.1.1551.1015                                                            
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+Data Representation  LINUX_32, INTEL_ABI                                                            
+Encoding             latin1  Western (ISO)                                                          
+
+
+                                 Engine/Host Dependent Information
+
+                 Data Set Page Size          4096                                 
+                 Number of Data Set Pages    119                                  
+                 First Data Page             1                                    
+                 Max Obs per Page            37                                   
+                 Obs in First Data Page      13                                   
+                 Number of Data Set Repairs  0                                    
+                 Filename                    /largefs/jabloche/corr/bench.sas7bdat
+                 Release Created             9.0000M0                             
+                 Host Created                WIN                                  
+                 Inode Number                10842852                             
+                 Access Permission           rw-r-----                            
+                 Owner Name                  jabloche                             
+                 File Size (bytes)           488448                               
+
+
+                            Alphabetic List of Variables and Attributes
+ 
+                                   #    Variable      Type    Len
+
+                                  14    april         Num       8
+                                   6    august        Num       8
+                                   3    book_m_jun    Num       3
+                                  10    december      Num       8
+                                  12    february      Num       8
+                                  11    january       Num       8
+                                   5    july          Num       8
+                                  16    june          Num       8
+                                  13    march         Num       8
+                                  15    may           Num       8
+                                   4    mom_jun       Num       3
+                                   9    november      Num       8
+                                   8    october       Num       8
+                                   7    september     Num       8
+                                   2    size_jun      Num       3
+                                   1    year          Num       4

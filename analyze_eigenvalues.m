@@ -12,7 +12,7 @@ addpath('/netscr/jabloche/matlab/util/');
 
 time_format = 'mmm-yy';
 
-Xyr = getTimeXAxis(1980,116);
+Xyr = getTimeXAxis(1980,120);
 
 tsEig = timeseries(eig_time(1:3,:)',Xyr,'name','Eigenvalues');
 tsEig.TimeInfo.Format = time_format;
@@ -41,6 +41,7 @@ legend( '2nd Eigenvalue','3rd Eigenvalue', '4th Eigenvalue',...
 set(gca,'XLim',[1 11000]);
 
 %%
+hf3 = figure('Name','Scatterplot of first and second eigenvalues','NumberTitle','off');
 scatter(eig_time(1,:)',eig_time(2,:)');
 set(gca,'XLim',[0.01 0.1]);
 set(gca,'YLim',[0.01 0.1]);

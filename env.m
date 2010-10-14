@@ -15,6 +15,6 @@ addpath('/netscr/jabloche/matlab/util/matlab_bgl/');
 
 % Local paths and data locations
 global libpath home outpath
-libpath = '/largefs/jabloche/fn_mat/';
+libpath = '/largefs/jabloche/corrmat/';
 home = '/netscr/jabloche/Correlations/';
-outpath = '/largefs/jabloche/fn_out/';
+outpath = '/largefs/jabloche/corr_out/';

@@ -1,0 +1,13 @@
+// Author: Jesse Blocher
+// Date: Oct 2010
+// Project: Correlations > Fundamentals
+// This file: yrqtr_sas_to_mat.stcmd
+// Desc: Converts in bulk all quarterly return matrices to matlab
+// Uses wildcards to convert all of them
+//
+// to run this program, run this:
+// bsub -q week -R Stattransfer -o <outfile>.out st <filename>.stcmd
+
+
+copy /largefs/jabloche/corrmat/yrqtr_new*.sas7bdat matlab /largefs/jabloche/corrmat/*.mat
+quit
