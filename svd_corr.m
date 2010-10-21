@@ -10,12 +10,13 @@ display('Begin SVD');
 tic; %start script timer.
 env; %create environment vars: home, libpath, outpath
 
-num_qtr = 120;
+
 
 % load matrix with check dimensions
-load(fullfile(libpath,'cusip_stats.mat'));
+load(fullfile(libpath,'cusip_stats_yrmo.mat'));
 corrmat_stats = data;
 clear data;
+num_qtr = size(corrmat_stats,1);
 
 num_eig = 10;
 eig_time = zeros(num_eig,num_qtr);
@@ -24,7 +25,7 @@ eig_time = zeros(num_eig,num_qtr);
 for index = 1:num_qtr;
 
 disp(['Reading file for index: ',num2str(index)]);
-filename = ['yrqtr_new',num2str(corrmat_stats(index,1)),'0',num2str(corrmat_stats(index,2)),'.mat'];
+filename = ['yrmo_new',num2str(corrmat_stats(index,1)),'0',num2str(corrmat_stats(index,2)),'.mat'];
 load(fullfile(libpath,filename));
 A = data;
 clear data;

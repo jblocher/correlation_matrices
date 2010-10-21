@@ -10,5 +10,5 @@
 
 
 
-copy /largefs/jabloche/corr_out/foureig_sas*.mat sas9 /largefs/jabloche/corr/*.sas7bdat
+copy /largefs/jabloche/corr_out/foureig_sas_monthly*.mat sas9 /largefs/jabloche/corr/*.sas7bdat
 quit

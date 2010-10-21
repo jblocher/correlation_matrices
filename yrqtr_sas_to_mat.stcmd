@@ -9,5 +9,5 @@
 // bsub -q week -R Stattransfer -o <outfile>.out st <filename>.stcmd
 
 
-copy /largefs/jabloche/corrmat/yrqtr_new*.sas7bdat matlab /largefs/jabloche/corrmat/*.mat
+copy /largefs/jabloche/corr/yrmo_new*.sas7bdat matlab /largefs/jabloche/corrmat/*.mat
 quit

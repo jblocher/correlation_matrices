@@ -11,28 +11,25 @@ tic; %start script timer.
 env; %create environment vars: home, libpath, outpath
 
 % load matrix with check dimensions
-load(fullfile(libpath,'cusip_stats.mat'));
+load(fullfile(libpath,'cusip_stats_yrmo.mat'));
 corrmat_stats = data;
 clear data;
 
-num_qtr = size(corrmat_stats,1);
+num_pd = size(corrmat_stats,1);
 num_assets = max(corrmat_stats(:,3));
 
-datev = getYrQtrInd(1980,2009);
-filename = 'matlab_datevector.mat';
-save(fullfile(outpath,filename), 'datev');
 
-for index=1:num_qtr
+for index=1:num_pd
     disp(['Reading file for index: ',num2str(index)]);
     filename = ['ret_eigs',num2str(index),'.mat'];
     load(fullfile(outpath,filename), 'S','V');
     
-    year = repmat(datev(index,2),1,corrmat_stats(index,3));
-    qtr = repmat(datev(index,3),1,corrmat_stats(index,3));
+    year = repmat(corrmat_stats(index,1),1,corrmat_stats(index,3));
+    qtr = repmat(corrmat_stats(index,2),1,corrmat_stats(index,3));
     
     sasdata = [year' qtr' V(:,1:4)];
     
-    filename = ['foureig_sas',num2str(index),'.mat'];
+    filename = ['foureig_sas_monthly',num2str(index),'.mat'];
     save(fullfile(outpath,filename), 'sasdata');
 end
 clear S V index;
