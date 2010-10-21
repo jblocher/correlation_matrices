@@ -1,0 +1,177 @@
+1                                                          The SAS System                             14:23 Monday, October 18, 2010
+
+NOTE: Unable to open SASUSER.REGSTRY. WORK.REGSTRY will be opened instead.
+NOTE: All registry changes will be lost at the end of the session.
+
+WARNING: Unable to copy SASUSER registry to WORK registry. Because of this, you will not see registry customizations during this 
+         session.
+NOTE: Copyright (c) 2002-2008 by SAS Institute Inc., Cary, NC, USA. 
+NOTE: SAS (r) Proprietary Software 9.2 (TS1M0) 
+      Licensed to UNIVERSITY OF NORTH CAROLINA CHAPEL HILL - T&R, Site 0070084073.
+NOTE: This session is executing on the Linux 2.6.18-194.el5 platform.
+
+
+
+You are running SAS 9. Some SAS 8 files will be automatically converted 
+by the V9 engine; others are incompatible.  Please see 
+http://support.sas.com/rnd/migration/planning/platform/64bit.html
+
+PROC MIGRATE will preserve current SAS file attributes and is 
+recommended for converting all your SAS libraries from any 
+SAS 8 release to SAS 9.  For details and examples, please see
+http://support.sas.com/rnd/migration/index.html
+
+
+This message is contained in the SAS news file, and is presented upon
+initialization.  Edit the file "news" in the "misc/base" directory to
+display site-specific news and information in the program log.
+The command line option "-nonews" will prevent this display.
+
+
+
+
+NOTE: SAS initialization used:
+      real time           0.27 seconds
+      cpu time            0.02 seconds
+      
+1          /* *************************************************************************/
+2          /* CREATED BY:      Jesse Blocher (UNC-Chapel Hill)
+3          /* MODIFIED BY:
+4          /* DATE CREATED:    Sept 2010
+5          /* PROG NAME:       form_ff_portfolios.sas
+6          /* Project:         Correlations > Market Fundamentals
+7          /* This File:       Pulls together FF Factors
+8          /************************************************************************************/
+9          
+10         %include 'corr_header.sas'; *header file with basic options and libraries;
+NOTE: Libref CORR was successfully assigned as follows: 
+      Engine:        V9 
+      Physical Name: /largefs/jabloche/corr
+NOTE: Libref CORRWORK was successfully assigned as follows: 
+      Engine:        V9 
+      Physical Name: /largefs/jabloche/corrwork
+19         
+20         
+21         /* Datasets required to run:
+22          * corr.FF_Research_Data_Factors		: YYYYMM  Mkt-RF     SMB     HML      RF
+23          * corr.FF_Momentum_Factor				: YYYYMM  Mom
+24          */
+25         
+26         /* Datasets Produced:
+27          * corr.dgtw_portfolios					: Portfolio returns by permno year month
+28          */
+29         
+30         
+31         proc contents data = corr.stocks_with_dgtw_assignments; run;
+NOTE: Data file CORR.STOCKS_WITH_DGTW_ASSIGNMENTS.DATA is in a format that is native to another 
+      host, or the file encoding does not match the session encoding. Cross Environment Data Access 
+      will be used, which might require additional CPU resources and might reduce performance.
+
+NOTE: PROCEDURE CONTENTS used (Total process time):
+      real time           0.45 seconds
+      cpu time            0.04 seconds
+      
+NOTE: The PROCEDURE CONTENTS printed page 1.
+
+32         proc contents data = corr.bench; run;
+NOTE: Data file CORR.BENCH.DATA is in a format that is native to another host, or the file encoding 
+      does not match the session encoding. Cross Environment Data Access will be used, which might 
+      require additional CPU resources and might reduce performance.
+
+NOTE: PROCEDURE CONTENTS used (Total process time):
+      real time           0.22 seconds
+      cpu time            0.02 seconds
+      
+NOTE: The PROCEDURE CONTENTS printed page 2.
+
+33         
+34         
+35         proc sql;
+36         	create table corrwork.dgtw_portfolios_raw as
+37         	select a.permno, b.*
+38         	from corr.stocks_with_dgtw_assignments as a, corr.bench as b
+39         	where a.year = b.year and a.book_m_jun = b.book_m_jun and a.size_jun = b.size_jun and
+39       ! a.mom_jun = b.mom_jun;
+NOTE: Data file CORR.STOCKS_WITH_DGTW_ASSIGNMENTS.DATA is in a format that is native to another 
+      host, or the file encoding does not match the session encoding. Cross Environment Data Access 
+      will be used, which might require additional CPU resources and might reduce performance.
+NOTE: Data file CORR.BENCH.DATA is in a format that is native to another host, or the file encoding 
+      does not match the session encoding. Cross Environment Data Access will be used, which might 
+      require additional CPU resources and might reduce performance.
+NOTE: Table CORRWORK.DGTW_PORTFOLIOS_RAW created, with 151908 rows and 17 columns.
+
+40         quit;
+NOTE: PROCEDURE SQL used (Total process time):
+      real time           2.50 seconds
+      cpu time            0.52 seconds
+      
+
+41         
+42         ** need to sort to transpose. goal is to move monthly returns to rows;
+43         proc sort data = corrwork.dgtw_portfolios_raw out = corrwork.sorted_byport_permno;
+44         by year permno book_m_jun size_jun mom_jun;
+45         run;
+
+NOTE: There were 151908 observations read from the data set CORRWORK.DGTW_PORTFOLIOS_RAW.
+NOTE: The data set CORRWORK.SORTED_BYPORT_PERMNO has 151908 observations and 17 variables.
+NOTE: PROCEDURE SORT used (Total process time):
+      real time           1.47 seconds
+      cpu time            0.21 seconds
+      
+
+46         
+47         * automatically transposes all numeric variables. Keep default headings because they are
+47       ! numeric, I think;
+48         proc transpose 	data = corrwork.sorted_byport_permno
+49         				out = corrwork.dgtw_first_try (rename=(col1=dgtw_return))
+50         				name = text_month;
+51         	by year permno book_m_jun size_jun mom_jun;
+52         run;
+
+NOTE: There were 151908 observations read from the data set CORRWORK.SORTED_BYPORT_PERMNO.
+NOTE: The data set CORRWORK.DGTW_FIRST_TRY has 1822896 observations and 7 variables.
+NOTE: PROCEDURE TRANSPOSE used (Total process time):
+      real time           2.17 seconds
+      cpu time            0.91 seconds
+      
+
+53         
+54         data corr.dgtw_factors (drop = date_c date2 text_month);
+55         	set corrwork.dgtw_first_try;
+56         	date_c = '01' || substr(text_month,1,3) || '2000';
+57         	date2 = input(date_c,date9.);
+58         	month = month(date2);
+59         run;
+
+NOTE: There were 1822896 observations read from the data set CORRWORK.DGTW_FIRST_TRY.
+NOTE: The data set CORR.DGTW_FACTORS has 1822896 observations and 7 variables.
+NOTE: DATA statement used (Total process time):
+      real time           4.02 seconds
+      cpu time            2.44 seconds
+      
+
+60         
+61         title 'print some transposed data';
+62         proc contents data = corr.dgtw_factors;run;
+
+NOTE: PROCEDURE CONTENTS used (Total process time):
+      real time           0.04 seconds
+      cpu time            0.02 seconds
+      
+NOTE: The PROCEDURE CONTENTS printed page 3.
+
+63         proc print data = corr.dgtw_factors (obs = 10);run;
+
+NOTE: There were 10 observations read from the data set CORR.DGTW_FACTORS.
+NOTE: The PROCEDURE PRINT printed page 4.
+NOTE: PROCEDURE PRINT used (Total process time):
+      real time           0.00 seconds
+      cpu time            0.00 seconds
+      
+
+
+NOTE: SAS Institute Inc., SAS Campus Drive, Cary, NC USA 27513-2414
+NOTE: The SAS System used:
+      real time           12.31 seconds
+      cpu time            4.19 seconds
+      

@@ -1,0 +1,898 @@
+1                                                          The SAS System                           16:04 Thursday, October 21, 2010
+
+NOTE: Copyright (c) 2002-2008 by SAS Institute Inc., Cary, NC, USA. 
+NOTE: SAS (r) Proprietary Software 9.2 (TS1M0) 
+      Licensed to UNIVERSITY OF NORTH CAROLINA CHAPEL HILL - T&R, Site 0070084073.
+NOTE: This session is executing on the Linux 2.6.18-194.el5 platform.
+
+
+
+You are running SAS 9. Some SAS 8 files will be automatically converted 
+by the V9 engine; others are incompatible.  Please see 
+http://support.sas.com/rnd/migration/planning/platform/64bit.html
+
+PROC MIGRATE will preserve current SAS file attributes and is 
+recommended for converting all your SAS libraries from any 
+SAS 8 release to SAS 9.  For details and examples, please see
+http://support.sas.com/rnd/migration/index.html
+
+
+This message is contained in the SAS news file, and is presented upon
+initialization.  Edit the file "news" in the "misc/base" directory to
+display site-specific news and information in the program log.
+The command line option "-nonews" will prevent this display.
+
+
+
+
+NOTE: SAS initialization used:
+      real time           0.65 seconds
+      cpu time            0.02 seconds
+      
+1          /* *************************************************************************/
+2          /* CREATED BY:      Jesse Blocher (UNC-Chapel Hill)
+3          /* MODIFIED BY:
+4          /* DATE CREATED:    Oct 2010
+5          /* PROG NAME:       cusip_indexing.sas
+6          /* Project:         Corr > FUnd
+7          /* This File:       Identify
+8          /************************************************************************************/
+9          
+10         %include 'corr_header.sas'; *header file with basic options and libraries;
+NOTE: Libref CORR was successfully assigned as follows: 
+      Engine:        V9 
+      Physical Name: /largefs/jabloche/corr
+NOTE: Libref CORRWORK was successfully assigned as follows: 
+      Engine:        V9 
+      Physical Name: /largefs/jabloche/corrwork
+19         
+20         
+21         /* Datasets required to run:
+22          * corrwork.cusip_indexingYY0MM			: Cusip, rowid, year, month simple data YY 1980 to
+22       ! 2009, MM 1 to 12
+23          * corrwork.cusips_temp					: the above concatenated together
+24          * corr.corr_el_YYYY0MM					: correlation matrices as edgelists
+25         
+26          */
+27         
+28         /* Datasets Produced:
+29         
+30          */
+31         
+32         proc sql;
+33         	create table unique_cusips as select unique cusip from corrwork.cusips_temp;
+NOTE: Table WORK.UNIQUE_CUSIPS created, with 24783 rows and 1 columns.
+
+34         quit;
+NOTE: PROCEDURE SQL used (Total process time):
+      real time           41.78 seconds
+      cpu time            1.52 seconds
+      
+
+35         
+36         data corrwork.unique_cusip_indices;
+37         	set unique_cusips;
+38         	cusip_index = _N_;
+39         run;
+
+NOTE: There were 24783 observations read from the data set WORK.UNIQUE_CUSIPS.
+NOTE: The data set CORRWORK.UNIQUE_CUSIP_INDICES has 24783 observations and 2 variables.
+NOTE: DATA statement used (Total process time):
+      real time           4.10 seconds
+      cpu time            0.01 seconds
+      
+
+40         
+41         proc contents data = corrwork.cusips_temp; run;
+
+NOTE: PROCEDURE CONTENTS used (Total process time):
+      real time           2.02 seconds
+      cpu time            0.02 seconds
+      
+NOTE: The PROCEDURE CONTENTS printed page 1.
+
+42         
+43         proc sql;
+44          create table corr.cusip_index_lookup_table as
+45          select a.year, a.month, a.rowid, b.cusip_index
+46          from
+47          corrwork.cusips_temp as a
+48          LEFT JOIN
+49          corrwork.unique_cusip_indices as b
+50          on a.cusip = b.cusip;
+NOTE: Table CORR.CUSIP_INDEX_LOOKUP_TABLE created, with 2597250 rows and 4 columns.
+
+51         quit;
+NOTE: PROCEDURE SQL used (Total process time):
+      real time           15.07 seconds
+      cpu time            2.27 seconds
+      
+
+52         
+53         proc contents data = corr.corr_el_198001; run;
+NOTE: Data file CORR.CORR_EL_198001.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+
+NOTE: PROCEDURE CONTENTS used (Total process time):
+      real time           0.79 seconds
+      cpu time            0.01 seconds
+      
+NOTE: The PROCEDURE CONTENTS printed page 2.
+
+54         
+55         %macro append_el();
+56         
+57         data corrwork.master_old_el;
+58         	set corr.corr_el_198001;
+59         run;
+60         %do y=1980 %to 2009;
+61         	%do q=1 %to 12;
+62         		proc append base = corrwork.master_old_el data = corr.corr_el_&y.0&q ; run;
+63         	%end;
+64         %end;
+65         
+66         %mend;
+67         
+68         %append_el;
+MPRINT(APPEND_EL):   data corrwork.master_old_el;
+MPRINT(APPEND_EL):   set corr.corr_el_198001;
+NOTE: Data file CORR.CORR_EL_198001.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: There were 2233032 observations read from the data set CORR.CORR_EL_198001.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 2233032 observations and 6 variables.
+NOTE: DATA statement used (Total process time):
+      real time           54.51 seconds
+      cpu time            1.57 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 1
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198001 ;
+NOTE: Data file CORR.CORR_EL_198001.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198001 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2233032 observations read from the data set CORR.CORR_EL_198001.
+NOTE: 2233032 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 4466064 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           5.66 seconds
+      cpu time            1.53 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 2
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198002 ;
+NOTE: Data file CORR.CORR_EL_198002.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198002 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2221706 observations read from the data set CORR.CORR_EL_198002.
+NOTE: 2221706 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 6687770 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           16.07 seconds
+      cpu time            1.53 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 3
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198003 ;
+NOTE: Data file CORR.CORR_EL_198003.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198003 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2306398 observations read from the data set CORR.CORR_EL_198003.
+NOTE: 2306398 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 8994168 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           43.38 seconds
+      cpu time            1.64 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 4
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198004 ;
+NOTE: Data file CORR.CORR_EL_198004.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198004 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2204771 observations read from the data set CORR.CORR_EL_198004.
+NOTE: 2204771 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 11198939 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           7.34 seconds
+      cpu time            1.53 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 5
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198005 ;
+NOTE: Data file CORR.CORR_EL_198005.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198005 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2171092 observations read from the data set CORR.CORR_EL_198005.
+NOTE: 2171092 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 13370031 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           2.77 seconds
+      cpu time            1.49 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 6
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198006 ;
+NOTE: Data file CORR.CORR_EL_198006.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198006 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2172025 observations read from the data set CORR.CORR_EL_198006.
+NOTE: 2172025 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 15542056 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           3.96 seconds
+      cpu time            1.59 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 7
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198007 ;
+NOTE: Data file CORR.CORR_EL_198007.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198007 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2344011 observations read from the data set CORR.CORR_EL_198007.
+NOTE: 2344011 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 17886067 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           3.53 seconds
+      cpu time            1.71 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 8
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198008 ;
+NOTE: Data file CORR.CORR_EL_198008.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198008 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2325648 observations read from the data set CORR.CORR_EL_198008.
+NOTE: 2325648 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 20211715 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           2.61 seconds
+      cpu time            1.71 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 9
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198009 ;
+NOTE: Data file CORR.CORR_EL_198009.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198009 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2369253 observations read from the data set CORR.CORR_EL_198009.
+NOTE: 2369253 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 22580968 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           4:11.21
+      cpu time            1.76 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 10
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_1980010 ;
+NOTE: Data file CORR.CORR_EL_1980010.DATA is in a format that is native to another host, or the 
+      file encoding does not match the session encoding. Cross Environment Data Access will be 
+      used, which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_1980010 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2395612 observations read from the data set CORR.CORR_EL_1980010.
+NOTE: 2395612 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 24976580 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           13.06 seconds
+      cpu time            1.78 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 11
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_1980011 ;
+NOTE: Data file CORR.CORR_EL_1980011.DATA is in a format that is native to another host, or the 
+      file encoding does not match the session encoding. Cross Environment Data Access will be 
+      used, which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_1980011 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2408352 observations read from the data set CORR.CORR_EL_1980011.
+NOTE: 2408352 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 27384932 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           10.03 seconds
+      cpu time            1.68 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1980
+SYMBOLGEN:  Macro variable Q resolves to 12
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_1980012 ;
+NOTE: Data file CORR.CORR_EL_1980012.DATA is in a format that is native to another host, or the 
+      file encoding does not match the session encoding. Cross Environment Data Access will be 
+      used, which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_1980012 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2482527 observations read from the data set CORR.CORR_EL_1980012.
+NOTE: 2482527 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 29867459 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           6.72 seconds
+      cpu time            1.69 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 1
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198101 ;
+NOTE: Data file CORR.CORR_EL_198101.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198101 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2478543 observations read from the data set CORR.CORR_EL_198101.
+NOTE: 2478543 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 32346002 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           7.09 seconds
+      cpu time            1.69 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 2
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198102 ;
+NOTE: Data file CORR.CORR_EL_198102.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198102 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2466609 observations read from the data set CORR.CORR_EL_198102.
+NOTE: 2466609 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 34812611 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           6.98 seconds
+      cpu time            1.71 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 3
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198103 ;
+NOTE: Data file CORR.CORR_EL_198103.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198103 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2510508 observations read from the data set CORR.CORR_EL_198103.
+NOTE: 2510508 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 37323119 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           23.89 seconds
+      cpu time            1.73 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 4
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198104 ;
+NOTE: Data file CORR.CORR_EL_198104.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198104 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2576068 observations read from the data set CORR.CORR_EL_198104.
+NOTE: 2576068 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 39899187 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           2:23.93
+      cpu time            1.78 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 5
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198105 ;
+NOTE: Data file CORR.CORR_EL_198105.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198105 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2607631 observations read from the data set CORR.CORR_EL_198105.
+NOTE: 2607631 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 42506818 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           10.73 seconds
+      cpu time            1.79 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 6
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198106 ;
+NOTE: Data file CORR.CORR_EL_198106.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198106 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2685826 observations read from the data set CORR.CORR_EL_198106.
+NOTE: 2685826 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 45192644 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           6.21 seconds
+      cpu time            1.87 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 7
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198107 ;
+NOTE: Data file CORR.CORR_EL_198107.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198107 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2734764 observations read from the data set CORR.CORR_EL_198107.
+NOTE: 2734764 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 47927408 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           18.22 seconds
+      cpu time            1.92 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 8
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198108 ;
+NOTE: Data file CORR.CORR_EL_198108.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198108 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2764129 observations read from the data set CORR.CORR_EL_198108.
+NOTE: 2764129 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 50691537 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           33.61 seconds
+      cpu time            1.96 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 9
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198109 ;
+NOTE: Data file CORR.CORR_EL_198109.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198109 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2806349 observations read from the data set CORR.CORR_EL_198109.
+NOTE: 2806349 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 53497886 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           8.50 seconds
+      cpu time            1.93 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 10
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_1981010 ;
+NOTE: Data file CORR.CORR_EL_1981010.DATA is in a format that is native to another host, or the 
+      file encoding does not match the session encoding. Cross Environment Data Access will be 
+      used, which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_1981010 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2765177 observations read from the data set CORR.CORR_EL_1981010.
+NOTE: 2765177 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 56263063 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           15.61 seconds
+      cpu time            1.89 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 11
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_1981011 ;
+NOTE: Data file CORR.CORR_EL_1981011.DATA is in a format that is native to another host, or the 
+      file encoding does not match the session encoding. Cross Environment Data Access will be 
+      used, which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_1981011 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2788366 observations read from the data set CORR.CORR_EL_1981011.
+NOTE: 2788366 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 59051429 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           59.51 seconds
+      cpu time            1.97 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1981
+SYMBOLGEN:  Macro variable Q resolves to 12
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_1981012 ;
+NOTE: Data file CORR.CORR_EL_1981012.DATA is in a format that is native to another host, or the 
+      file encoding does not match the session encoding. Cross Environment Data Access will be 
+      used, which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_1981012 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2825452 observations read from the data set CORR.CORR_EL_1981012.
+NOTE: 2825452 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 61876881 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           22.09 seconds
+      cpu time            1.99 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 1
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198201 ;
+NOTE: Data file CORR.CORR_EL_198201.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198201 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2768336 observations read from the data set CORR.CORR_EL_198201.
+NOTE: 2768336 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 64645217 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           24.87 seconds
+      cpu time            2.00 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 2
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198202 ;
+NOTE: Data file CORR.CORR_EL_198202.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198202 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2786254 observations read from the data set CORR.CORR_EL_198202.
+NOTE: 2786254 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 67431471 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           4:15.60
+      cpu time            1.90 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 3
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198203 ;
+NOTE: Data file CORR.CORR_EL_198203.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198203 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2805289 observations read from the data set CORR.CORR_EL_198203.
+NOTE: 2805289 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 70236760 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           11.81 seconds
+      cpu time            1.95 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 4
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198204 ;
+NOTE: Data file CORR.CORR_EL_198204.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198204 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2721186 observations read from the data set CORR.CORR_EL_198204.
+NOTE: 2721186 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 72957946 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           30.10 seconds
+      cpu time            1.91 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 5
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198205 ;
+NOTE: Data file CORR.CORR_EL_198205.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198205 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2723270 observations read from the data set CORR.CORR_EL_198205.
+NOTE: 2723270 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 75681216 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           16.82 seconds
+      cpu time            1.88 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 6
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198206 ;
+NOTE: Data file CORR.CORR_EL_198206.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198206 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2708678 observations read from the data set CORR.CORR_EL_198206.
+NOTE: 2708678 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 78389894 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           13.25 seconds
+      cpu time            1.86 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 7
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198207 ;
+NOTE: Data file CORR.CORR_EL_198207.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198207 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2691011 observations read from the data set CORR.CORR_EL_198207.
+NOTE: 2691011 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 81080905 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           54.82 seconds
+      cpu time            1.87 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 8
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198208 ;
+NOTE: Data file CORR.CORR_EL_198208.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198208 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2687901 observations read from the data set CORR.CORR_EL_198208.
+NOTE: 2687901 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 83768806 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           19.15 seconds
+      cpu time            1.88 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 9
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198209 ;
+NOTE: Data file CORR.CORR_EL_198209.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198209 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2691013 observations read from the data set CORR.CORR_EL_198209.
+NOTE: 2691013 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 86459819 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           50.43 seconds
+      cpu time            1.89 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 10
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_1982010 ;
+NOTE: Data file CORR.CORR_EL_1982010.DATA is in a format that is native to another host, or the 
+      file encoding does not match the session encoding. Cross Environment Data Access will be 
+      used, which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_1982010 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2681684 observations read from the data set CORR.CORR_EL_1982010.
+NOTE: 2681684 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 89141503 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           17.49 seconds
+      cpu time            1.87 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 11
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_1982011 ;
+NOTE: Data file CORR.CORR_EL_1982011.DATA is in a format that is native to another host, or the 
+      file encoding does not match the session encoding. Cross Environment Data Access will be 
+      used, which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_1982011 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2964255 observations read from the data set CORR.CORR_EL_1982011.
+NOTE: 2964255 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 92105758 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           47.19 seconds
+      cpu time            2.08 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1982
+SYMBOLGEN:  Macro variable Q resolves to 12
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_1982012 ;
+NOTE: Data file CORR.CORR_EL_1982012.DATA is in a format that is native to another host, or the 
+      file encoding does not match the session encoding. Cross Environment Data Access will be 
+      used, which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_1982012 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2941433 observations read from the data set CORR.CORR_EL_1982012.
+NOTE: 2941433 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 95047191 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           26.26 seconds
+      cpu time            2.04 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1983
+SYMBOLGEN:  Macro variable Q resolves to 1
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198301 ;
+NOTE: Data file CORR.CORR_EL_198301.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198301 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2977336 observations read from the data set CORR.CORR_EL_198301.
+NOTE: 2977336 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 98024527 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           17.06 seconds
+      cpu time            2.04 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1983
+SYMBOLGEN:  Macro variable Q resolves to 2
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198302 ;
+NOTE: Data file CORR.CORR_EL_198302.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198302 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 2938180 observations read from the data set CORR.CORR_EL_198302.
+NOTE: 2938180 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 100962707 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           49.15 seconds
+      cpu time            2.08 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1983
+SYMBOLGEN:  Macro variable Q resolves to 3
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198303 ;
+NOTE: Data file CORR.CORR_EL_198303.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198303 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 3016752 observations read from the data set CORR.CORR_EL_198303.
+NOTE: 3016752 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 103979459 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           15.07 seconds
+      cpu time            2.08 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1983
+SYMBOLGEN:  Macro variable Q resolves to 4
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198304 ;
+NOTE: Data file CORR.CORR_EL_198304.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198304 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 3018952 observations read from the data set CORR.CORR_EL_198304.
+NOTE: 3018952 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 106998411 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           49.07 seconds
+      cpu time            2.10 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1983
+SYMBOLGEN:  Macro variable Q resolves to 5
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198305 ;
+NOTE: Data file CORR.CORR_EL_198305.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198305 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 3115313 observations read from the data set CORR.CORR_EL_198305.
+NOTE: 3115313 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 110113724 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           22.10 seconds
+      cpu time            2.13 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1983
+SYMBOLGEN:  Macro variable Q resolves to 6
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198306 ;
+NOTE: Data file CORR.CORR_EL_198306.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198306 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 3192814 observations read from the data set CORR.CORR_EL_198306.
+NOTE: 3192814 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 113306538 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           22.76 seconds
+      cpu time            2.20 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1983
+SYMBOLGEN:  Macro variable Q resolves to 7
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198307 ;
+NOTE: Data file CORR.CORR_EL_198307.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198307 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 3250708 observations read from the data set CORR.CORR_EL_198307.
+NOTE: 3250708 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 116557246 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           47.95 seconds
+      cpu time            2.25 seconds
+      
+
+SYMBOLGEN:  Macro variable Y resolves to 1983
+SYMBOLGEN:  Macro variable Q resolves to 8
+MPRINT(APPEND_EL):   proc append base = corrwork.master_old_el data = corr.corr_el_198308 ;
+NOTE: Data file CORR.CORR_EL_198308.DATA is in a format that is native to another host, or the file 
+      encoding does not match the session encoding. Cross Environment Data Access will be used, 
+      which might require additional CPU resources and might reduce performance.
+MPRINT(APPEND_EL):   run;
+
+NOTE: Appending CORR.CORR_EL_198308 to CORRWORK.MASTER_OLD_EL.
+NOTE: There were 3368058 observations read from the data set CORR.CORR_EL_198308.
+NOTE: 3368058 observations added.
+NOTE: The data set CORRWORK.MASTER_OLD_EL has 119925304 observations and 6 variables.
+NOTE: PROCEDURE APPEND used (Total process time):
+      real time           29.21 seconds
+      cpu time            2.31 seconds
+      

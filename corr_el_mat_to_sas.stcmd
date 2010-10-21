@@ -1,0 +1,13 @@
+// Author: Jesse Blocher
+// Date: Oct 2010
+// Project: Correlations > Fundamentals
+// This file: corr_el_mat_to_sas.stcmd
+// Desc: Converts in bulk all monthly edgelist matrices to sas
+// Uses wildcards to convert all of them
+//
+// to run this program, run this:
+// bsub -q week -R Stattransfer -o <outfile>.out st <filename>.stcmd
+
+
+copy /largefs/jabloche/corrmat/corr_el_*.mat sas /largefs/jabloche/corr/*.sas7bdat
+quit

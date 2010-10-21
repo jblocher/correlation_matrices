@@ -1,0 +1,90 @@
+                                           The SAS System       16:04 Thursday, October 21, 2010   1
+
+                                       The CONTENTS Procedure
+
+Data Set Name        CORRWORK.CUSIPS_TEMP                              Observations          2597250
+Member Type          DATA                                              Variables             4      
+Engine               V9                                                Indexes               0      
+Created              Monday, October 18, 2010 02:39:22 PM              Observation Length    32     
+Last Modified        Monday, October 18, 2010 02:42:25 PM              Deleted Observations  0      
+Protection                                                             Compressed            NO     
+Data Set Type                                                          Sorted                NO     
+Label                                                                                               
+Data Representation  SOLARIS_X86_64, LINUX_X86_64,                                                  
+                     ALPHA_TRU64, LINUX_IA64                                                        
+Encoding             latin1  Western (ISO)                                                          
+
+
+                                 Engine/Host Dependent Information
+
+            Data Set Page Size          8192                                           
+            Number of Data Set Pages    10267                                          
+            First Data Page             1                                              
+            Max Obs per Page            253                                            
+            Obs in First Data Page      182                                            
+            Number of Data Set Repairs  0                                              
+            Filename                    /largefs/jabloche/corrwork/cusips_temp.sas7bdat
+            Release Created             9.0201M0                                       
+            Host Created                Linux                                          
+            Inode Number                561067                                         
+            Access Permission           rw-r-----                                      
+            Owner Name                  jabloche                                       
+            File Size (bytes)           84115456                                       
+
+
+                             Alphabetic List of Variables and Attributes
+ 
+                 #    Variable    Type    Len    Format    Informat    Label
+
+                 1    CUSIP       Char      8    8.        8.          CUSIP Header
+                 4    month       Num       8                                      
+                 2    rowid       Num       8                                      
+                 3    year        Num       8                                      
+                                           The SAS System       16:04 Thursday, October 21, 2010   2
+
+                                       The CONTENTS Procedure
+
+Data Set Name        CORR.CORR_EL_198001                               Observations          2233032
+Member Type          DATA                                              Variables             6      
+Engine               V9                                                Indexes               0      
+Created              Thursday, October 21, 2010 07:31:36 PM            Observation Length    26     
+Last Modified        Thursday, October 21, 2010 07:31:36 PM            Deleted Observations  0      
+Protection                                                             Compressed            NO     
+Data Set Type                                                          Sorted                NO     
+Label                corr_el_198001 dataset written by                                              
+                     Stat/Transfer Ver. 10.1.1551.1015                                              
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+Data Representation  LINUX_32, INTEL_ABI                                                            
+Encoding             latin1  Western (ISO)                                                          
+
+
+                                 Engine/Host Dependent Information
+
+             Data Set Page Size          4096                                          
+             Number of Data Set Pages    14408                                         
+             First Data Page             1                                             
+             Max Obs per Page            155                                           
+             Obs in First Data Page      92                                            
+             Number of Data Set Repairs  0                                             
+             Filename                    /largefs/jabloche/corr/corr_el_198001.sas7bdat
+             Release Created             9.0000M0                                      
+             Host Created                WIN                                           
+             Inode Number                731911                                        
+             Access Permission           rw-r-----                                     
+             Owner Name                  jabloche                                      
+             File Size (bytes)           59016192                                      
+
+
+                             Alphabetic List of Variables and Attributes
+ 
+                                    #    Variable    Type    Len
+
+                                    1    col1        Num       4
+                                    2    col2        Num       4
+                                    3    col3        Num       8
+                                    4    col4        Num       3
+                                    5    col5        Num       4
+                                    6    col6        Num       3
